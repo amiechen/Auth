@@ -3,6 +3,7 @@ var express = require('express');
 var mongoose = require('mongoose');
 var sessions = require('client-sessions');
 var bcrypt = require('bcryptjs');
+var csrf = require('csurf');
 
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
@@ -29,6 +30,34 @@ app.use(sessions({
   duration: 30*60*1000, //log you out in 30 min
   activeDuration: 5 * 50 * 1000 //lengthen their session for 5 min
 }));
+
+app.use(function(req, res, next){
+  if(req.session && req.session.user){
+    User.findOne({email: req.session.user.email}, function(err, user){
+      if(user){
+        req.user = user;
+        delete req.user.password;
+        req.session.user = req.user;
+        res.locals.user = req.user;
+      }
+      next();
+    });
+  }else{
+    next();
+  }
+});
+
+function requireLogin (req, res, next) {
+  if(!req.user){
+    res.redirect('/login');
+  } else {
+    next();
+  }
+}
+
+// use csrf
+app.use(csrf());
+
 //make user's http request available to req.body 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -83,20 +112,8 @@ app.post('/login', function(req, res) {
   });
 });
 
-app.get('/dashboard', function(req, res) {
-  if (req.session.user && req.session){
-    User.findOne({email: req.session.user.email}, function(err, user){
-      if(!user){
-        req.session.reset();
-        res.redirect('/login');
-      }else{
-        res.locals.user = user;
-        res.render('dashboard.jade');
-      }
-    });
-  } else {
-    res.redirect('/login');
-  }
+app.get('/dashboard', requireLogin, function(req, res) {
+  res.render('dashboard.jade');
 });
 
 app.get('/logout', function(req, res) {
