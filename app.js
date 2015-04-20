@@ -28,7 +28,10 @@ app.use(sessions({
   cookieName: 'session',
   secret: 'apsoidfp1-2039j0sdjf09whesofdi163s*o2', //unique string for encription/decription
   duration: 30*60*1000, //log you out in 30 min
-  activeDuration: 5 * 50 * 1000 //lengthen their session for 5 min
+  activeDuration: 5 * 50 * 1000, //lengthen their session for 5 min
+  httpOnly: true, //browser javascript won't be accessing stuff ever!
+  secure: true, //only use cookies over https
+  ephemeral: true //delete this cookie when the browser is closed
 }));
 
 app.use(function(req, res, next){
@@ -47,6 +50,12 @@ app.use(function(req, res, next){
   }
 });
 
+//make user's http request available to req.body 
+app.use(bodyParser.urlencoded({extended: true}));
+
+// use csrf
+app.use(csrf());
+
 function requireLogin (req, res, next) {
   if(!req.user){
     res.redirect('/login');
@@ -55,18 +64,13 @@ function requireLogin (req, res, next) {
   }
 }
 
-// use csrf
-app.use(csrf());
-
-//make user's http request available to req.body 
-app.use(bodyParser.urlencoded({extended: true}));
 
 app.get('/', function(req, res) {
   res.render('index.jade');
 });
 
 app.get('/register', function(req, res) {
-  res.render('register.jade');
+  res.render('register.jade',{ csrfToken: req.csrfToken() });//
 });
 app.post('/register', function(req, res) {
   //send whatever user filled in the form back to browser
@@ -94,7 +98,7 @@ app.post('/register', function(req, res) {
 });
 
 app.get('/login', function(req, res) {
-  res.render('login.jade');
+  res.render('login.jade',{ csrfToken: req.csrfToken() });//
 });
 
 app.post('/login', function(req, res) {

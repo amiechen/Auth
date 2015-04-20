@@ -13,7 +13,7 @@
     "bcryptjs": "*",
     "body-parser": "^1.12.3",
     "client-sessions": "*",
-    "csurf": "*",
+    "csurf": "^1.8.0",
     "express": "^5.0.0-alpha.1",
     "jade": "*",
     "mongoose": "^4.0.1"
