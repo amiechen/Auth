@@ -1,6 +1,7 @@
 var bodyParser = require('body-parser');
 var express = require('express');
 var mongoose = require('mongoose');
+var sessions = require('client-sessions');
 
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
@@ -50,13 +51,27 @@ app.post('/register', function(req, res) {
 
       res.render('register.jade', {error: error});
     } else {
-      res.redirect('/login');
+      res.redirect('/dashboard');
     }
   })
 });
 
 app.get('/login', function(req, res) {
   res.render('login.jade');
+});
+
+app.post('/login', function(req, res) {
+  User.findOne({email: req.body.email}, function(err, user){
+    if(!user){
+      res.render('login.jade', {error: 'User doesnt exist'});
+    } else {
+      if (req.body.password === user.password){
+        res.redirect('/dashboard');
+      } else {
+        res.render('login.jade', {error: 'User doesnt exist'});
+      }
+    }
+  });
 });
 
 app.get('/dashboard', function(req, res) {

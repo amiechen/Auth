@@ -1,0 +1,21 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "A simple Node.js auth example.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Amie Chen",
+  "license": "UNLICENSE",
+  "dependencies": {
+    "bcryptjs": "*",
+    "body-parser": "^1.12.3",
+    "client-sessions": "*",
+    "csurf": "*",
+    "express": "^5.0.0-alpha.1",
+    "jade": "*",
+    "mongoose": "^4.0.1"
+  }
+}
