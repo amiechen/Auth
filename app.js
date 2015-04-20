@@ -2,6 +2,7 @@ var bodyParser = require('body-parser');
 var express = require('express');
 var mongoose = require('mongoose');
 var sessions = require('client-sessions');
+var bcrypt = require('bcryptjs');
 
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
@@ -22,6 +23,12 @@ app.locals.pretty = true;
 mongoose.connect('mongodb://localhost/newauth');
 
 //middleware 
+app.use(sessions({
+  cookieName: 'session',
+  secret: 'apsoidfp1-2039j0sdjf09whesofdi163s*o2', //unique string for encription/decription
+  duration: 30*60*1000, //log you out in 30 min
+  activeDuration: 5 * 50 * 1000 //lengthen their session for 5 min
+}));
 //make user's http request available to req.body 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -35,11 +42,12 @@ app.get('/register', function(req, res) {
 app.post('/register', function(req, res) {
   //send whatever user filled in the form back to browser
   //res.json(req.body);
+  var hash = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10));
   var user = new User({
     firstName: req.body.firstName,
     lastName: req.body.lastName,
     email: req.body.email,
-    password: req.body.password
+    password: hash
   });
 
   user.save(function(err){
@@ -65,7 +73,8 @@ app.post('/login', function(req, res) {
     if(!user){
       res.render('login.jade', {error: 'User doesnt exist'});
     } else {
-      if (req.body.password === user.password){
+      if (bcrypt.compareSync(req.body.password, user.password)){
+        req.session.user = user;
         res.redirect('/dashboard');
       } else {
         res.render('login.jade', {error: 'User doesnt exist'});
@@ -75,10 +84,23 @@ app.post('/login', function(req, res) {
 });
 
 app.get('/dashboard', function(req, res) {
-  res.render('dashboard.jade');
+  if (req.session.user && req.session){
+    User.findOne({email: req.session.user.email}, function(err, user){
+      if(!user){
+        req.session.reset();
+        res.redirect('/login');
+      }else{
+        res.locals.user = user;
+        res.render('dashboard.jade');
+      }
+    });
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.get('/logout', function(req, res) {
+  req.session.reset();
   res.redirect('/');
 });
 app.listen(3000);
