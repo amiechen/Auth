@@ -1,3 +1,6 @@
+var dotenv = require('dotenv');
+dotenv.load();
+
 var bodyParser = require('body-parser');
 var express = require('express');
 var mongoose = require('mongoose');
@@ -19,6 +22,7 @@ var User = mongoose.model('User', new Schema({
 var app = express();
 app.set('view engine', 'jade');
 app.locals.pretty = true;
+
 
 //connect to mongo
 mongoose.connect('mongodb://localhost/newauth');
@@ -124,4 +128,4 @@ app.get('/logout', function(req, res) {
   req.session.reset();
   res.redirect('/');
 });
-app.listen(3000);
+app.listen(8080);
