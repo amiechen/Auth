@@ -74,7 +74,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('/register', function(req, res) {
-  res.render('register.jade',{ csrfToken: req.csrfToken() });//
+  res.render('register.jade',{ csrfToken: req.csrfToken() });
 });
 app.post('/register', function(req, res) {
   //send whatever user filled in the form back to browser
@@ -122,6 +122,7 @@ app.post('/login', function(req, res) {
 
 app.get('/dashboard', requireLogin, function(req, res) {
   res.render('dashboard.jade');
+  console.log('key', process.env.OUTPAN_KEY);
 });
 
 app.get('/logout', function(req, res) {
